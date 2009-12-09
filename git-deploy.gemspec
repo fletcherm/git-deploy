@@ -1,5 +1,5 @@
 Gem::Specification.new do |gem|
-  gem.name    = 'git-deploy'
+  gem.name    = 'fletcherm-git-deploy'
   gem.version = '0.3.0'
   gem.date    = Date.today.to_s
   
