@@ -68,12 +68,12 @@ end
 
 # run migrations when new ones added
 if new_migrations = added_files.any_in_dir?('db/migrate')
-  system %(rake db:migrate RAILS_ENV=#{RAILS_ENV})
+  system %(umask 002 && rake db:migrate RAILS_ENV=#{RAILS_ENV})
 end
 
 if modified_files.include?('.gitmodules')
   # initialize new submodules
-  system %(git submodule init)
+  system %(umask 002 && git submodule init)
   # sync submodule remote urls in case of changes
   config = parse_configuration('.gitmodules')
 
@@ -96,7 +96,12 @@ if modified_files.include?('.gitmodules')
   end
 end
 # update existing submodules
-system %(git submodule update)
+system %(umask 002 && git submodule update)
+
+if changed_files.include?('Gemfile')
+  # update bundled gems if manifest file has changed
+  system %(umask 002 && bundle install)
+end
 
 # have bundler unpack new gems. Honor config/build_options.yml if it is present.
 if modified_files.include?("Gemfile")
@@ -113,7 +118,8 @@ end
 system %(git clean -d -f vendor)
 
 # determine if app restart is needed
-if cached_assets_cleared or new_migrations or changed_files.any_in_dir?(%w(app config lib public vendor))
+if cached_assets_cleared or new_migrations or !File.exists?('config/environment.rb') or
+    changed_files.any_in_dir?(%w(app config lib public vendor))
   require 'fileutils'
   # tell Passenger to restart this app
   FileUtils.touch 'tmp/restart.txt'

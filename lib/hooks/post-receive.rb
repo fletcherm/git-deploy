@@ -7,10 +7,14 @@ if ENV['GIT_DIR'] == '.'
   ENV['GIT_DIR'] = '.git'
 end
 
+cmd = %(bash -c "[ -f /etc/profile ] && source /etc/profile; echo $PATH")
+envpath = IO.popen(cmd, 'r') { |io| io.read.chomp }
+ENV['PATH'] = envpath
+
 # find out the current branch
-head = File.read('.git/HEAD').chomp
+head = `git symbolic-ref HEAD`.chomp
 # abort if we're on a detached head
-exit unless head.sub!('ref: ', '')
+exit unless $?.success?
 
 oldrev = newrev = nil
 null_ref = '0' * 40
@@ -26,13 +30,19 @@ end
 exit if newrev.nil? or newrev == null_ref
 
 # update the working copy
-`git reset --hard`
+`umask 002 && git reset --hard`
+
+config = 'config/database.yml'
+logfile = 'log/deploy.log'
+restart = 'tmp/restart.txt'
 
 if oldrev == null_ref
   # this is the first push; this branch was just created
   require 'fileutils'
   FileUtils.mkdir_p %w(log tmp)
-  config = 'config/database.yml'
+  FileUtils.chmod 0775, %w(log tmp)
+  FileUtils.touch [logfile, restart]
+  FileUtils.chmod 0664, [logfile, restart]
   
   unless File.exists?(config)
     # install the database config from the example file
@@ -40,7 +50,6 @@ if oldrev == null_ref
     FileUtils.cp example, config if example
   end
 else
-  logfile = 'log/deploy.log'
   # log timestamp
   File.open(logfile, 'a') { |log| log.puts "==== #{Time.now} ====" }
   # start the post-reset hook in background
