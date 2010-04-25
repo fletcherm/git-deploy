@@ -89,6 +89,7 @@ Capistrano::Configuration.instance(true).load do
       push
     end
 
+    desc "Upload new post-reset and post-receive hooks"
     task :install_hooks do
       dir = File.dirname(__FILE__) + '/hooks'
       remote_dir = "#{deploy_to}/.git/hooks"

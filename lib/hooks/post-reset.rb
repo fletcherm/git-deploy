@@ -103,17 +103,6 @@ if changed_files.include?('Gemfile')
   system %(umask 002 && bundle install)
 end
 
-# have bundler unpack new gems. Honor config/build_options.yml if it is present.
-if modified_files.include?("Gemfile")
-  base_command = "gem bundle --cached"
-  build_options = "config/build_options.yml"
-  if File.exists? build_options
-    system %(#{base_command} --build-options #{build_options})
-  else
-    system base_command
-  end
-end
-
 # clean unversioned files from vendor (e.g. old submodules)
 system %(git clean -d -f vendor)
 
