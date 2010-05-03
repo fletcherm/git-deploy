@@ -1,10 +1,11 @@
 #!/usr/bin/env ruby
 if ENV['GIT_DIR'] == '.'
   # this means the script has been called as a hook, not manually.
-  # get the proper GIT_DIR so we can descend into the working copy dir;
+  # clear the GIT_DIR (which makes it default to .git) so
+  # we can descend into the working copy dir;
   # if we don't then `git reset --hard` doesn't affect the working tree.
   Dir.chdir('..')
-  ENV['GIT_DIR'] = '.git'
+  ENV['GIT_DIR'] = nil
 end
 
 cmd = %(bash -c "[ -f /etc/profile ] && source /etc/profile; echo $PATH")
