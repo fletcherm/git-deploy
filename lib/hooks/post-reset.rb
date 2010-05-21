@@ -106,10 +106,15 @@ end
 # clean unversioned files from vendor (e.g. old submodules)
 system %(git clean -d -f vendor)
 
+
 # determine if app restart is needed
 if cached_assets_cleared or new_migrations or !File.exists?('config/environment.rb') or
     changed_files.any_in_dir?(%w(app config lib public vendor))
   require 'fileutils'
+
+  puts "clearing cache"
+  system %(rake cache:clear)
+
   # tell Passenger to restart this app
   FileUtils.touch 'tmp/restart.txt'
   puts "restarting Passenger app"
