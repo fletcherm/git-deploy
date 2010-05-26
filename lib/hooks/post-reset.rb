@@ -52,6 +52,11 @@ deleted_files = changes_hash['D'] # deleted
 changed_files = modified_files + deleted_files # all
 puts "files changed: #{changed_files.size}"
 
+if changed_files.include?('Gemfile')
+  # update bundled gems if manifest file has changed
+  system %(umask 002 && bundle install)
+end
+
 cached_assets_cleared = false
 
 # detect modified asset dirs
@@ -97,11 +102,6 @@ if modified_files.include?('.gitmodules')
 end
 # update existing submodules
 system %(umask 002 && git submodule update)
-
-if changed_files.include?('Gemfile')
-  # update bundled gems if manifest file has changed
-  system %(umask 002 && bundle install)
-end
 
 # clean unversioned files from vendor (e.g. old submodules)
 system %(git clean -d -f vendor)
