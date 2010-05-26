@@ -36,6 +36,7 @@ exit if newrev.nil? or newrev == null_ref
 config = 'config/database.yml'
 logfile = 'log/deploy.log'
 restart = 'tmp/restart.txt'
+gemfile = 'Gemfile'
 
 if oldrev == null_ref
   # this is the first push; this branch was just created
@@ -49,6 +50,11 @@ if oldrev == null_ref
     # install the database config from the example file
     example = ['config/database.example.yml', config + '.example'].find { |f| File.exists? f }
     FileUtils.cp example, config if example
+  end
+
+  if File.exists?(gemfile)
+    # run bundle install
+    system %(umask 002 && bundle install)
   end
 else
   # log timestamp
