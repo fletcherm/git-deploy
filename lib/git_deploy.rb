@@ -10,7 +10,7 @@ Capistrano::Configuration.instance(true).load do
   _cset(:application) { abort "Please specify the name of your application, set :application, 'foo'" }
   _cset :remote, "origin"
   _cset :branch, "master"
-  _cset :environment, "production"
+  _cset(:environment, %w[ production ])
 
   _cset(:multiple_hosts) { roles.values.map{ |v| v.servers}.flatten.uniq.size > 1 }
   _cset(:repository)  { `#{ source.local.scm('config', "remote.#{remote}.url") }`.chomp }
@@ -99,7 +99,8 @@ Capistrano::Configuration.instance(true).load do
       run "chmod +x #{remote_dir}/post-receive #{remote_dir}/post-reset"
 
       # Rewrite the post-reset hook to use the configured environment
-      run "sed -i'' 's/^environment_placeholder$/RAILS_ENV = \"#{environment}\"/' #{remote_dir}/post-reset"
+      envz = "%w[ #{environment.join(' ')} ]"
+      run "sed -i'' 's/^environment_placeholder$/environments = #{envz}/' #{remote_dir}/post-reset"
     end
 
     desc "Restarts your Passenger application."

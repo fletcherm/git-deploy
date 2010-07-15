@@ -33,8 +33,10 @@ Setup steps
         set :remote, "origin"
         # specify the deployment branch
         set :branch, "master"
-        # specify the RAILS_ENV used by db:migrate. defaults to production
-        set :environment, "staging"
+        # specify the RAILS_ENV used by db:migrate.
+        # multiple environments may be specified as an array, e.g. %w[ test staging ]
+        # defaults to %w[ production ]
+        set :environment, %w[ staging production ]
         # sudo will only be used to create the deployment directory
         set :use_sudo, true
         # the remote host is read automatically from your git remote specification

@@ -73,7 +73,12 @@ end
 
 # run migrations when new ones added
 if new_migrations = added_files.any_in_dir?('db/migrate')
-  system %(umask 002 && rake db:migrate RAILS_ENV=#{RAILS_ENV})
+  environments.each do |env|
+    puts "Running migrations for environment [#{env}]"
+    system %(umask 002 && rake db:migrate RAILS_ENV=#{env})
+    puts "Finished migrations for environment [#{env}]"
+    puts "***"
+  end
 end
 
 if modified_files.include?('.gitmodules')
@@ -112,8 +117,10 @@ if cached_assets_cleared or new_migrations or !File.exists?('config/environment.
     changed_files.any_in_dir?(%w(app config lib public vendor))
   require 'fileutils'
 
-  puts "clearing cache"
-  system %(rake cache:clear)
+  environments.each do |env|
+    puts "Clearing cache for environment [#{env}]"
+    system %(rake cache:clear RAILS_ENV=#{env})
+  end
 
   # tell Passenger to restart this app
   FileUtils.touch 'tmp/restart.txt'
